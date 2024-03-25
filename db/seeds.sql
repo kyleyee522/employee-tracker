@@ -14,7 +14,7 @@ INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES
 ('Bane', 'Bat', 2, 1),
 ('Sad', 'Boi', 2, NULL);
 
-SELECT employee.id, employee.first_name, employee.last_name, title, name, salary, COALESCE(CONCAT(e2.first_name, ' ', e2.last_name), NULL) AS manager_name
+SELECT employee.id, employee.first_name, employee.last_name, title, name, salary, NULLIF((CONCAT(e2.first_name, ' ', e2.last_name)), ' ') AS manager_name
 FROM employee
 LEFT JOIN role ON role_id = role.id
 LEFT JOIN department ON department.id = role.id
