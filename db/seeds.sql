@@ -14,11 +14,21 @@ INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES
 ('Bane', 'Bat', 2, 1),
 ('Sad', 'Boi', 2, NULL);
 
-SELECT employee.id, employee.first_name, employee.last_name, title, name, salary, NULLIF((CONCAT(e2.first_name, ' ', e2.last_name)), ' ') AS manager_name
-FROM employee
-LEFT JOIN role ON role_id = role.id
-LEFT JOIN department ON department.id = role.id
-LEFT JOIN employee e2 on employee.manager_id = e2.id;
+-- SELECT * FROM employee LEFT JOIN role ON role_id = role.id
+
+SELECT CONCAT(first_name, ' ', last_name) as name FROM employee
+
+-- SELECT * FROM employee LEFT JOIN role
+
+-- SELECT * FROM department
+
+-- SELECT role.id, title, name as department, salary FROM role LEFT JOIN department ON department = department.id
+
+-- SELECT employee.id, employee.first_name, employee.last_name, title, name as department, salary, NULLIF((CONCAT(e2.first_name, ' ', e2.last_name)), ' ') AS manager_name
+-- FROM employee
+-- LEFT JOIN role ON role_id = role.id
+-- LEFT JOIN department ON department.id = role.id
+-- LEFT JOIN employee e2 on employee.manager_id = e2.id;
 
 -- SELECT * FROM employee
 -- JOIN role ON manager_id = role.id
