@@ -1,5 +1,6 @@
 const { Pool } = require('pg');
 const inquirer = require('inquirer');
+// const { promptUser } = require('../index.js');
 
 function databaseMethods(data) {
 	const pool = new Pool(
@@ -8,8 +9,8 @@ function databaseMethods(data) {
 			password: 'password',
 			host: 'localhost',
 			database: 'company_db',
-		},
-		console.log(`Connected to the company_db database.`)
+		}
+		// console.log(`Connected to the company_db database.`)
 	);
 
 	pool.connect();
@@ -30,14 +31,11 @@ function databaseMethods(data) {
 
 	if (data === 'Add Employee') {
 		let employeeRole = [];
-		let employeeNames = [];
+		let employeeNames = ['None'];
 		pool.query(`SELECT title FROM role`, function (err, { rows }) {
-			// console.log({ rows });
 			for (let i = 0; i < rows.length; i++) {
-				// console.log(rows[i].title);
 				employeeRole.push(rows[i].title);
 			}
-			// console.log(employeeRole);
 
 			pool.query(
 				`SELECT CONCAT(first_name, ' ', last_name) as name FROM employee`,
@@ -45,7 +43,6 @@ function databaseMethods(data) {
 					for (let i = 0; i < rows.length; i++) {
 						employeeNames.push(rows[i].name);
 					}
-					// console.log(employeeNames);
 					inquirer
 						.prompt([
 							{
@@ -72,44 +69,25 @@ function databaseMethods(data) {
 							},
 						])
 						.then((data) => {
-							console.log(data.firstName);
-							console.log(data.lastName);
-							console.log(data.role);
-							console.log(data.manager);
+							let employeeIndex;
+							if (data.employeeNames === 'None') {
+								employeeIndex = null;
+							} else {
+								employeeIndex = employeeNames.indexOf(data.manager) + 1;
+							}
+							const roleIndex = employeeRole.indexOf(data.role) + 1;
+							pool.query(
+								`INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES($1, $2, $3, $4)`,
+								[data.firstName, data.lastName, roleIndex, employeeIndex],
+								(err, { rows }) => {
+									if (err) {
+										console.log(err);
+									}
+								}
+							);
 						});
 				}
 			);
-			// pool.query(`SELECT name FROM department`, function (err, { rows }) {
-			// 	for (let i = 0; i < rows.length; i++) {
-			// 		// console.log(rows[i].title);
-			// 		departments.push(rows[i].name);
-			// 	}
-			// 	// console.log(departments);
-			// 	inquirer.createPromptModule([
-			// 		{
-			// 			type: 'input',
-			// 			message: "What is the employee's first name",
-			// 			name: 'firstName',
-			// 		},
-			// 		{
-			// 			type: 'input',
-			// 			message: "What is the employee's last name",
-			// 			name: 'lastName',
-			// 		},
-			// 		{
-			// 			type: 'list',
-			// 			message: `What is the employee's role?`,
-			// 			name: 'role',
-			// 			choices: employeeRole,
-			// 		},
-			// 		{
-			// 			type: 'list',
-			// 			message: `What is the employee's role?`,
-			// 			name: 'role',
-			// 			choices: employeeRole,
-			// 		},
-			// 	]);
-			// });
 		});
 	}
 	if (data === 'Update Employee Role') {
@@ -126,7 +104,6 @@ function databaseMethods(data) {
 		let departments = [];
 		pool.query(`SELECT name FROM department`, function (err, { rows }) {
 			for (let i = 0; i < rows.length; i++) {
-				// console.log(rows[i].title);
 				departments.push(rows[i].name);
 			}
 			inquirer
@@ -149,9 +126,16 @@ function databaseMethods(data) {
 					},
 				])
 				.then((data) => {
-					console.log(data.roleName);
-					console.log(data.roleSalary);
-					console.log(data.roleDepartment);
+					const departmentIndex = departments.indexOf(data.roleDepartment) + 1;
+					pool.query(
+						`INSERT INTO role(title, salary, department) VALUES($1, $2, $3)`,
+						[data.roleName, data.roleSalary, departmentIndex],
+						(err, { rows }) => {
+							if (err) {
+								console.log(err);
+							}
+						}
+					);
 				});
 		});
 	}
@@ -170,7 +154,15 @@ function databaseMethods(data) {
 				},
 			])
 			.then((data) => {
-				console.log(data);
+				pool.query(
+					`INSERT INTO department(name) VALUES($1)`,
+					[data.department],
+					(err, { rows }) => {
+						if (err) {
+							console.log(err);
+						}
+					}
+				);
 			});
 	}
 }
