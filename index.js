@@ -1,6 +1,7 @@
 const inquirer = require('inquirer');
 const { databaseMethods } = require('./utils/index');
 const { Pool } = require('pg');
+const { viewEmployees } = require('./utils/index');
 // const inquirer = require('inquirer');
 // const { promptUser } = require('../index.js');
 
@@ -38,6 +39,7 @@ function promptUser() {
 			if (data.task === 'Quit') {
 				process.exit();
 			}
+
 			if (data.task === 'View All Employees') {
 				console.log('IT MATCHES');
 				pool.query(
@@ -115,8 +117,21 @@ function promptUser() {
 					);
 				});
 			}
+
 			if (data.task === 'Update Employee Role') {
+				let employeeNames = [];
+
+				pool.query(
+					`SELECT id, CONCAT(first_name, ' ', last_name) as name FROM employee`,
+					function (err, { rows }) {
+						for (let i = 0; i < rows.length; i++) {
+							employeeNames.push(rows[i].name);
+						}
+						console.log(rows);
+					}
+				);
 			}
+
 			if (data.task === 'View All Roles') {
 				pool.query(
 					`SELECT role.id, title, name as department, salary FROM role LEFT JOIN department ON department = department.id`,
@@ -126,6 +141,7 @@ function promptUser() {
 					}
 				);
 			}
+
 			if (data.task === 'Add Role') {
 				let departments = [];
 				pool.query(`SELECT name FROM department`, function (err, { rows }) {
@@ -167,6 +183,7 @@ function promptUser() {
 						});
 				});
 			}
+
 			if (data.task === 'View All Departments') {
 				pool.query(`SELECT * FROM department`, function (err, { rows }) {
 					console.log({ rows });
@@ -205,5 +222,3 @@ function promptUser() {
 }
 
 promptUser();
-
-// module.exports = { promptUser };

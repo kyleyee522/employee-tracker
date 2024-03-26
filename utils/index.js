@@ -2,6 +2,19 @@ const { Pool } = require('pg');
 const inquirer = require('inquirer');
 // const { promptUser } = require('../index.js');
 
+// function viewEmployees() {
+// 	pool.query(
+// 		`SELECT employee.id, employee.first_name, employee.last_name, title, name as department, salary, NULLIF((CONCAT(e2.first_name, ' ', e2.last_name)), ' ') AS manager_name
+//             FROM employee
+//             LEFT JOIN role ON role_id = role.id
+//             LEFT JOIN department ON department.id = role.id
+//             LEFT JOIN employee e2 on employee.manager_id = e2.id;`,
+// 		function (err, { rows }) {
+// 			console.log({ rows });
+// 		}
+// 	);
+// }
+
 function databaseMethods(data) {
 	const pool = new Pool(
 		{
@@ -16,7 +29,7 @@ function databaseMethods(data) {
 	pool.connect();
 
 	if (data === 'View All Employees') {
-		console.log('IT MATCHES');
+		// console.log('IT MATCHES');
 		pool.query(
 			`SELECT employee.id, employee.first_name, employee.last_name, title, name as department, salary, NULLIF((CONCAT(e2.first_name, ' ', e2.last_name)), ' ') AS manager_name
             FROM employee
