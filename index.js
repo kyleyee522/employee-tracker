@@ -1,19 +1,13 @@
 const inquirer = require('inquirer');
-const { databaseMethods } = require('./utils/index');
 const { Pool } = require('pg');
-const { viewEmployees } = require('./utils/index');
-// const inquirer = require('inquirer');
-// const { promptUser } = require('../index.js');
 
-const pool = new Pool(
-	{
-		user: 'postgres',
-		password: 'password',
-		host: 'localhost',
-		database: 'company_db',
-	}
-	// console.log(`Connected to the company_db database.`)
-);
+const pool = new Pool({
+	user: 'postgres',
+	password: 'password',
+	host: 'localhost',
+	database: 'company_db',
+});
+pool.connect();
 
 function promptUser() {
 	inquirer
@@ -35,21 +29,19 @@ function promptUser() {
 			},
 		])
 		.then((data) => {
-			// console.log(data.task);
 			if (data.task === 'Quit') {
 				process.exit();
 			}
 
 			if (data.task === 'View All Employees') {
-				console.log('IT MATCHES');
 				pool.query(
 					`SELECT employee.id, employee.first_name, employee.last_name, title, name as department, salary, NULLIF((CONCAT(e2.first_name, ' ', e2.last_name)), ' ') AS manager_name
 					FROM employee
 					LEFT JOIN role ON role_id = role.id
-					LEFT JOIN department ON department.id = role.id
+					LEFT JOIN department ON department.id = role.department
 					LEFT JOIN employee e2 on employee.manager_id = e2.id;`,
 					function (err, { rows }) {
-						console.log({ rows });
+						console.table(rows);
 						promptUser();
 					}
 				);
@@ -99,17 +91,19 @@ function promptUser() {
 									if (data.employeeNames === 'None') {
 										employeeIndex = null;
 									} else {
-										employeeIndex = employeeNames.indexOf(data.manager) + 1;
+										employeeIndex = employeeNames.indexOf(data.manager);
 									}
 									const roleIndex = employeeRole.indexOf(data.role) + 1;
+
 									pool.query(
 										`INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES($1, $2, $3, $4)`,
 										[data.firstName, data.lastName, roleIndex, employeeIndex],
 										(err, { rows }) => {
 											if (err) {
 												console.log(err);
-												promptUser();
+												process.exit();
 											}
+											promptUser();
 										}
 									);
 								});
@@ -120,23 +114,62 @@ function promptUser() {
 
 			if (data.task === 'Update Employee Role') {
 				let employeeNames = [];
-
-				pool.query(
-					`SELECT id, CONCAT(first_name, ' ', last_name) as name FROM employee`,
-					function (err, { rows }) {
-						for (let i = 0; i < rows.length; i++) {
-							employeeNames.push(rows[i].name);
-						}
-						console.log(rows);
+				let employeeRole = [];
+				let allEmployees = [];
+				pool.query(`SELECT title FROM role`, function (err, { rows }) {
+					for (let i = 0; i < rows.length; i++) {
+						employeeRole.push(rows[i].title);
 					}
-				);
+
+					pool.query(
+						`SELECT id, CONCAT(first_name, ' ', last_name) as name FROM employee`,
+						function (err, { rows }) {
+							for (let i = 0; i < rows.length; i++) {
+								employeeNames.push(rows[i].name);
+							}
+							allEmployees.push(rows);
+
+							inquirer
+								.prompt([
+									{
+										type: 'list',
+										message: `Which employee's role do you want to update?`,
+										name: 'employee',
+										choices: employeeNames,
+									},
+									{
+										type: 'list',
+										message: `Which role do you want to assign the selected employee?`,
+										name: 'role',
+										choices: employeeRole,
+									},
+								])
+								.then((data) => {
+									const employee = rows.find((e) => e.name === data.employee);
+									const id = employee.id;
+									const role_id = employeeRole.indexOf(data.role) + 1;
+									pool.query(
+										`UPDATE employee SET role_id = ($1) WHERE id = ($2)`,
+										[role_id, id],
+										function (err, { rows }) {
+											if (err) {
+												console.log(err);
+												process.exit();
+											}
+											promptUser();
+										}
+									);
+								});
+						}
+					);
+				});
 			}
 
 			if (data.task === 'View All Roles') {
 				pool.query(
 					`SELECT role.id, title, name as department, salary FROM role LEFT JOIN department ON department = department.id`,
 					function (err, { rows }) {
-						console.log({ rows });
+						console.table(rows);
 						promptUser();
 					}
 				);
@@ -176,8 +209,9 @@ function promptUser() {
 								(err, { rows }) => {
 									if (err) {
 										console.log(err);
-										promptUser();
+										process.exit();
 									}
+									promptUser();
 								}
 							);
 						});
@@ -186,7 +220,7 @@ function promptUser() {
 
 			if (data.task === 'View All Departments') {
 				pool.query(`SELECT * FROM department`, function (err, { rows }) {
-					console.log({ rows });
+					console.table(rows);
 					promptUser();
 				});
 			}
@@ -206,18 +240,13 @@ function promptUser() {
 							(err, { rows }) => {
 								if (err) {
 									console.log(err);
-									promptUser();
+									process.exit();
 								}
+								promptUser();
 							}
 						);
 					});
 			}
-			// } else {
-			// 	databaseMethods(data.task);
-			// 	// promptUser();
-			// }
-
-			// promptUser();
 		});
 }
 
