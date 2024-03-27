@@ -88,17 +88,18 @@ function promptUser() {
 								])
 								.then((data) => {
 									let employeeIndex;
-									if (data.employeeNames === 'None') {
+									if (data.manager === 'None') {
 										employeeIndex = null;
 									} else {
 										employeeIndex = employeeNames.indexOf(data.manager);
 									}
 									const roleIndex = employeeRole.indexOf(data.role) + 1;
+									console.log(employeeIndex);
 
 									pool.query(
 										`INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES($1, $2, $3, $4)`,
 										[data.firstName, data.lastName, roleIndex, employeeIndex],
-										(err, { rows }) => {
+										(err) => {
 											if (err) {
 												console.log(err);
 												process.exit();
