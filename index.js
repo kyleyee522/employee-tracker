@@ -94,7 +94,6 @@ function promptUser() {
 										employeeIndex = employeeNames.indexOf(data.manager);
 									}
 									const roleIndex = employeeRole.indexOf(data.role) + 1;
-									console.log(employeeIndex);
 
 									pool.query(
 										`INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES($1, $2, $3, $4)`,
