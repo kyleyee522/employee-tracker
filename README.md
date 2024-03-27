@@ -7,3 +7,5 @@
 - This project was created in order to utilize my SQL/PostgreSQL knowledge. The SQL language was used to create the database and JavaScript was used to create the prompts and to select, insert, and update values from/into the database. The "inquirer" and "pg" NPM packages were used to create the prompts and to interact with the database.
 
 ## Demonstration
+
+Video Link: https://drive.google.com/file/d/1dolQueO-esFyZdtbpnQSQ9tSLW0mIiUV/view?usp=sharing
